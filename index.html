@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CheckMate - Fully functional, offline chess game with smart AI engine, tactical analysis, clock timers, and export features.">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <title>CheckMate — Fully Functional Offline Chess & AI</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-theme="emerald">
+
+  <!-- Application Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M19 22H5a1 1 0 0 1-1-1v-2h16v2a1 1 0 0 1-1 1zm-2-5H7l1-5h8l1 5zm-3.5-7.5l.5-4.5h-4l.5 4.5h3zM12 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4z"/></svg>
+      </div>
+      <h1 class="brand-title">CheckMate</h1>
+      <span class="brand-badge" title="No internet required — works 100% offline">Offline</span>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn-icon" id="btnToggleMute" title="Toggle Sound (M)" aria-label="Toggle Sound">
+        <svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+
+      <button class="btn-icon" id="btnFlipBoard" title="Flip Board Orientation (F)" aria-label="Flip Board">
+        <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+      </button>
+
+      <button class="btn-action btn-primary" id="btnNewGameModal" title="Start a New Game">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        New Game
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Game Container -->
+  <main class="main-container">
+
+    <!-- Chess Stage: Players, Eval Bar, Board -->
+    <section class="chess-stage" aria-label="Chess Arena">
+      
+      <!-- Top Player Bar -->
+      <div class="player-bar" id="topPlayerBar">
+        <div class="player-info">
+          <div class="player-avatar" id="topPlayerAvatar">🤖</div>
+          <div class="player-meta">
+            <div class="player-name-row">
+              <span class="player-name" id="topPlayerName">StockBot (Medium)</span>
+              <span class="player-badge" id="topPlayerBadge">Black</span>
+              <span class="ai-status-pulse" title="AI is evaluating..." style="display:none;"></span>
+            </div>
+            <div class="captured-rack" id="topCapturedRack"></div>
+          </div>
+          <span class="captured-diff" id="topMaterialDiff"></span>
+        </div>
+        <div class="chess-clock" id="blackClock" aria-label="Black Clock">10:00</div>
+      </div>
+
+      <!-- Board & Real-time Evaluation Bar -->
+      <div class="board-wrapper-container">
+        
+        <!-- Advantage Evaluation Bar -->
+        <div class="eval-bar-container" title="Advantage Evaluation Bar">
+          <div class="eval-bar-white" id="evalBarWhite"></div>
+          <div class="eval-bar-score" id="evalScore">0.0</div>
+        </div>
+
+        <!-- The 8x8 Chessboard -->
+        <div class="chessboard-container">
+          <div class="chessboard" id="chessboard" role="grid" aria-label="Interactive 8x8 Chessboard"></div>
+        </div>
+      </div>
+
+      <!-- Bottom Player Bar -->
+      <div class="player-bar" id="bottomPlayerBar">
+        <div class="player-info">
+          <div class="player-avatar" id="bottomPlayerAvatar">👤</div>
+          <div class="player-meta">
+            <div class="player-name-row">
+              <span class="player-name" id="bottomPlayerName">Player (You)</span>
+              <span class="player-badge" id="bottomPlayerBadge">White</span>
+            </div>
+            <div class="captured-rack" id="bottomCapturedRack"></div>
+          </div>
+          <span class="captured-diff" id="bottomMaterialDiff"></span>
+        </div>
+        <div class="chess-clock" id="whiteClock" aria-label="White Clock">10:00</div>
+      </div>
+
+    </section>
+
+    <!-- Side Control & Analysis Panel -->
+    <aside class="side-panel">
+      <!-- Tabs Navigation -->
+      <nav class="panel-tabs" role="tablist">
+        <button class="tab-btn active" data-tab="tabMoves" role="tab" id="tabMovesBtn">
+          <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+          Moves
+        </button>
+        <button class="tab-btn" data-tab="tabSettings" role="tab" id="tabSettingsBtn">
+          <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+          Settings
+        </button>
+        <button class="tab-btn" data-tab="tabExport" role="tab" id="tabExportBtn">
+          <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          FEN / PGN
+        </button>
+      </nav>
+
+      <!-- Moves Tab Content -->
+      <div class="tab-content active" id="tabMoves">
+        <div class="moves-table-container">
+          <table class="moves-table">
+            <thead>
+              <tr>
+                <th style="width: 48px;">#</th>
+                <th>White</th>
+                <th>Black</th>
+              </tr>
+            </thead>
+            <tbody id="movesTableBody"></tbody>
+          </table>
+        </div>
+
+        <!-- History Navigation Bar -->
+        <div class="history-nav-bar">
+          <button class="btn-nav" id="btnFirstMove" title="First Move" aria-label="First Move">
+            <svg viewBox="0 0 24 24"><path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/></svg>
+          </button>
+          <button class="btn-nav" id="btnPrevMove" title="Previous Move" aria-label="Previous Move">
+            <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
+          <button class="btn-nav" id="btnNextMove" title="Next Move" aria-label="Next Move">
+            <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </button>
+          <button class="btn-nav" id="btnLastMove" title="Current / Live Move" aria-label="Current Live Move">
+            <svg viewBox="0 0 24 24"><path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/></svg>
+          </button>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="action-grid">
+          <button class="btn-action btn-secondary" id="btnUndo" title="Undo Last Move">
+            <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+            Undo
+          </button>
+
+          <button class="btn-action btn-secondary" id="btnRedo" title="Redo Move">
+            <svg viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg>
+            Redo
+          </button>
+
+          <button class="btn-action btn-secondary" id="btnHint" title="Ask AI for Best Move Suggestion">
+            <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
+            Hint
+          </button>
+
+          <button class="btn-action btn-danger" id="btnResign" title="Resign Current Game">
+            <svg viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+            Resign
+          </button>
+
+          <button class="btn-action btn-primary" id="btnQuickNew" style="grid-column: span 2;">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Configure New Game
+          </button>
+        </div>
+      </div>
+
+      <!-- Settings Tab Content -->
+      <div class="tab-content" id="tabSettings">
+        <div class="settings-group">
+          <label class="settings-label" for="themeSelect">Board Theme</label>
+          <select id="themeSelect" class="select-custom">
+            <option value="emerald">Emerald & Ivory (Tournament)</option>
+            <option value="wood">Walnut & Maple (Classic Wood)</option>
+            <option value="obsidian">Obsidian & Silver (Dark Luxe)</option>
+            <option value="cyberpunk">Cyberpunk (Neon Cyan)</option>
+          </select>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-label" for="difficultySelect">AI Difficulty Level</label>
+          <select id="difficultySelect" class="select-custom">
+            <option value="easy">Easy (Casual Blunders • ~800 Elo)</option>
+            <option value="medium" selected>Medium (Standard Minimax • ~1400 Elo)</option>
+            <option value="hard">Hard (Alpha-Beta Deep • ~1800 Elo)</option>
+            <option value="master">Master (Quiescence Deep Search • ~2000+ Elo)</option>
+          </select>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Legal Move Hints</div>
+            <div class="toggle-sub">Show target dots and capture rings</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleHints" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Board Coordinates</div>
+            <div class="toggle-sub">Display a-h and 1-8 square ranks</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleCoords" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Auto-Flip Board</div>
+            <div class="toggle-sub">Rotate board on every turn in 2-Player mode</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="toggleAutoFlip">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- FEN / PGN Tab Content -->
+      <div class="tab-content" id="tabExport">
+        <div class="code-box-label">
+          <span>FEN Position String</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-nav" id="btnCopyFen" title="Copy FEN">Copy</button>
+            <button class="btn-nav" id="btnLoadFen" title="Load FEN into Board">Load</button>
+          </div>
+        </div>
+        <textarea id="fenInput" class="code-box" placeholder="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></textarea>
+
+        <div class="code-box-label">
+          <span>PGN Game Record</span>
+          <div style="display:flex; gap:6px;">
+            <button class="btn-nav" id="btnCopyPgn" title="Copy PGN">Copy</button>
+            <button class="btn-nav" id="btnDownloadPgn" title="Download .pgn File">Download</button>
+          </div>
+        </div>
+        <textarea id="pgnTextarea" class="code-box" style="height: 120px;" readonly placeholder="[Event CheckMate]..."></textarea>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- Pawn Promotion Modal Dialog -->
+  <div class="modal-overlay" id="promoOverlay">
+    <div class="modal-card">
+      <h2 class="modal-title">Promote Pawn</h2>
+      <p class="modal-subtitle">Choose a piece to upgrade your advancing pawn</p>
+      <div class="promo-grid" id="promoGrid"></div>
+    </div>
+  </div>
+
+  <!-- Game Over / Setup Generic Modal Dialog -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card">
+      <div class="modal-header-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <h2 class="modal-title" id="modalTitle">Game Over</h2>
+      <p class="modal-subtitle" id="modalSubtitle">White checkmated Black</p>
+      <div class="modal-actions" id="modalActions"></div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Notifications -->
+  <div class="banner-toast" id="bannerToast" role="alert">
+    <span class="banner-toast-text" id="bannerToastText">Notification message</span>
+  </div>
+
+  <!-- Scripts (Ordered for reliable synchronous offline execution without CORS issues) -->
+  <script src="js/pieces-svg.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/chess-engine.js"></script>
+  <script src="js/chess-ai.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Offline Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {
+          // Graceful fallback if opened under file:// protocol
+        });
+      });
+    }
+  </script>
+</body>
+</html>

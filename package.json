@@ -1,0 +1,20 @@
+{
+  "name": "check-mate",
+  "version": "1.0.0",
+  "description": "Fully functional offline chess game with smart AI and tactical analysis",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y serve . -l 3000",
+    "dev": "npx -y serve . -l 3000"
+  },
+  "keywords": [
+    "chess",
+    "offline-chess",
+    "minimax",
+    "alpha-beta",
+    "pwa",
+    "vanilla-js"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
