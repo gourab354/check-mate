@@ -9,6 +9,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
   <title>CheckMate — Fully Functional Offline Chess & AI</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/robot.css">
 </head>
 <body data-theme="emerald">
 
@@ -110,6 +111,10 @@
         <button class="tab-btn" data-tab="tabExport" role="tab" id="tabExportBtn">
           <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
           FEN / PGN
+        </button>
+        <button class="tab-btn" data-tab="tabRobot" role="tab" id="tabRobotBtn">
+          <svg viewBox="0 0 24 24"><path d="M22 14h-1c0-3.87-3.13-7-7-7h-1V5.73c.6-.35 1-.99 1-1.73 0-1.1-.9-2-2-2s-2 .9-2 2c0 .74.4 1.38 1 1.73V7h-1C6.13 7 3 10.13 3 14H2c-.55 0-1 .45-1 1v3c0 .55.45 1 1 1h1v1c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-1h1c.55 0 1-.45 1-1v-3c0-.55-.45-1-1-1zM9 13c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm6 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1 5H10v-2h4v2z"/></svg>
+          Robotic Arm
         </button>
       </nav>
 
@@ -257,6 +262,143 @@
         </div>
         <textarea id="pgnTextarea" class="code-box" style="height: 120px;" readonly placeholder="[Event CheckMate]..."></textarea>
       </div>
+
+      <!-- Robotic Arm Companion Tab Content -->
+      <div class="tab-content" id="tabRobot">
+        <div class="robot-panel">
+
+          <!-- Connection Card -->
+          <div class="robot-conn-card">
+            <div class="robot-conn-header">
+              <div class="robot-status-indicator">
+                <span class="status-dot offline" id="robotStatusDot"></span>
+                <span id="robotStatusText">Connecting...</span>
+              </div>
+              <span class="brand-badge" style="background: rgba(99,102,241,0.2); color: #818cf8; border-color: rgba(99,102,241,0.4);">RPi 4 + PCA9685</span>
+            </div>
+            <div class="robot-ip-input-row">
+              <input type="text" id="robotServerIp" class="input-custom" value="http://localhost:5000" placeholder="http://192.168.1.xxx:5000">
+              <button class="btn-action btn-secondary" id="btnRobotConnect" style="padding: 6px 12px; font-size: 0.82rem;">Connect</button>
+            </div>
+          </div>
+
+          <!-- Big Action: Player Move Done -->
+          <button class="btn-trigger-move" id="btnTriggerMove" title="Press when you finish your physical move">
+            <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            I Played My Move (Scan Board)
+          </button>
+
+          <!-- Status Banner -->
+          <div class="robot-state-banner">
+            <div><span class="state-badge idle" id="robotStateBadge">IDLE</span></div>
+            <div id="robotStatusMessage" style="color: var(--text-muted); font-size: 0.8rem;">Ready. Make a move on the board or start game.</div>
+          </div>
+
+          <!-- Live Camera Feed & 4-Corner Calibration -->
+          <div class="robot-feed-card">
+            <div class="feed-header">
+              <span>Overhead Camera</span>
+              <div class="feed-view-toggles">
+                <button class="feed-toggle-btn active" id="btnViewRaw">Camera</button>
+                <button class="feed-toggle-btn" id="btnViewWarped">Warped 8x8</button>
+              </div>
+            </div>
+            <div class="feed-viewport">
+              <img id="robotFeedImg" class="feed-image" src="" alt="Webcam Feed">
+              <canvas id="robotFeedCanvas" class="feed-overlay-canvas"></canvas>
+            </div>
+            <div class="feed-actions-bar">
+              <span style="font-size: 0.72rem; color: var(--text-dim);">Drag 4 corners to calibrate grid</span>
+              <button class="btn-action btn-secondary" id="btnSaveCalibration" style="padding: 4px 10px; font-size: 0.75rem;">Save Corners</button>
+            </div>
+          </div>
+
+          <!-- Robot Game Controls -->
+          <div class="arm-controls-card">
+            <div class="section-title">Robot Game Control</div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <select id="selectRobotColor" class="select-mini" style="flex:1;">
+                <option value="black" selected>Robot Plays Black (You: White)</option>
+                <option value="white">Robot Plays White (You: Black)</option>
+              </select>
+              <button class="btn-action btn-primary" id="btnNewGameRobot" style="padding: 6px 12px; font-size: 0.8rem;">Start Game</button>
+            </div>
+          </div>
+
+          <!-- Robotic Arm Diagnostics & Jogging -->
+          <div class="arm-controls-card">
+            <div class="section-title">Arm Motion & Servos</div>
+            <div class="arm-quick-actions">
+              <button class="btn-mini-action" id="btnHomeArm">
+                <span>🏠</span> Home
+              </button>
+              <button class="btn-mini-action" id="btnOpenGripper">
+                <span>✋</span> Open Grip
+              </button>
+              <button class="btn-mini-action" id="btnCloseGripper">
+                <span>✊</span> Close Grip
+              </button>
+              <button class="btn-mini-action" id="btnRelaxServos" style="grid-column: span 3; background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); color: #f87171;">
+                <span>❄</span> Relax / Rest Servos (Cut PWM)
+              </button>
+            </div>
+
+            <!-- Reach Test Selector -->
+            <div style="margin-top: 4px;">
+              <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 4px;">Test Reach to Square:</div>
+              <div class="test-move-row">
+                <select id="selectTestSquare" class="select-mini" style="flex:1;">
+                  <option value="e4">e4 (Center)</option>
+                  <option value="d4">d4 (Center)</option>
+                  <option value="e2">e2 (Pawn Rank)</option>
+                  <option value="e7">e7 (Pawn Rank)</option>
+                  <option value="a1">a1 (White Rook)</option>
+                  <option value="h1">h1 (White Rook)</option>
+                  <option value="a8">a8 (Black Rook)</option>
+                  <option value="h8">h8 (Black Rook)</option>
+                  <option value="graveyard_white">Graveyard (White)</option>
+                  <option value="graveyard_black">Graveyard (Black)</option>
+                </select>
+                <button class="btn-action btn-secondary" id="btnTestSquare" style="padding: 6px 10px; font-size: 0.78rem;">Test Reach</button>
+              </div>
+            </div>
+
+            <!-- Sliders for Joints -->
+            <div class="servo-sliders-list" style="margin-top: 6px;">
+              <div class="servo-slider-item">
+                <div class="servo-slider-label"><span>Base Yaw (Ch 0)</span><strong id="valBase">90°</strong></div>
+                <input type="range" id="sliderBase" class="servo-range" min="0" max="180" value="90">
+              </div>
+              <div class="servo-slider-item">
+                <div class="servo-slider-label"><span>Shoulder (Ch 1)</span><strong id="valShoulder">120°</strong></div>
+                <input type="range" id="sliderShoulder" class="servo-range" min="10" max="170" value="120">
+              </div>
+              <div class="servo-slider-item">
+                <div class="servo-slider-label"><span>Elbow (Ch 2)</span><strong id="valElbow">40°</strong></div>
+                <input type="range" id="sliderElbow" class="servo-range" min="10" max="170" value="40">
+              </div>
+              <div class="servo-slider-item">
+                <div class="servo-slider-label"><span>Wrist Pitch (Ch 3)</span><strong id="valWrist">90°</strong></div>
+                <input type="range" id="sliderWrist" class="servo-range" min="10" max="170" value="90">
+              </div>
+              <div class="servo-slider-item">
+                <div class="servo-slider-label"><span>Gripper Clamp (Ch 5)</span><strong id="valGripper">40°</strong></div>
+                <input type="range" id="sliderGripper" class="servo-range" min="30" max="120" value="40">
+              </div>
+            </div>
+          </div>
+
+          <!-- Real-Time Activity Log -->
+          <div class="robot-logs-card">
+            <div class="logs-header">
+              <span>Live Brain Terminal</span>
+              <span>Vision • Stockfish • Arm</span>
+            </div>
+            <div class="logs-terminal" id="robotLogsTerminal"></div>
+          </div>
+
+        </div>
+      </div>
     </aside>
 
   </main>
@@ -293,6 +435,7 @@
   <script src="js/chess-engine.js"></script>
   <script src="js/chess-ai.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/robot-companion.js"></script>
 
   <!-- Offline Service Worker Registration -->
   <script>

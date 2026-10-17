@@ -99,14 +99,90 @@ check-mate/
 ├── manifest.json       # PWA manifest for desktop/mobile installation
 ├── sw.js               # Service Worker for 100% offline caching
 ├── package.json        # NPM scripts for local development server
+├── requirements.txt    # Python dependencies for Raspberry Pi & PC
+├── setup_raspberry_pi.sh # 1-step Raspberry Pi 4 automated setup script
 ├── css/
-│   └── style.css       # Vanilla CSS glassmorphic design system & themes
+│   ├── style.css       # Vanilla CSS glassmorphic design system & themes
+│   └── robot.css       # Robotic companion dashboard styles & camera stream
 ├── js/
 │   ├── pieces-svg.js   # Crisp Staunton vector pieces (inline SVGs)
 │   ├── audio.js        # Web Audio API procedural sound synthesizer
 │   ├── chess-engine.js # Complete chess rules, SAN notation, FEN, PGN
-│   ├── chess-ai.js     # Minimax AI, Alpha-Beta, PST evaluation, difficulty & reaction delay
-│   └── app.js          # UI controller, drag & drop, timers, game loop
+│   ├── chess-ai.js     # Minimax AI, Alpha-Beta, PST evaluation
+│   ├── app.js          # UI controller, drag & drop, timers, game loop
+│   └── robot-companion.js # Robot WebSocket controller, calibration, & servo jog
+├── docs/
+│   └── HARDWARE_WIRING.md # Wiring diagrams, pinouts, power supply recommendations
+├── robot_backend/      # Python Raspberry Pi Brain
+│   ├── config.py       # Board dimensions, link lengths, servo PWM settings
+│   ├── main.py         # Entrypoint (CLI or Web Server)
+│   ├── server.py       # FastAPI + MJPEG video stream + WebSocket telemetry
+│   ├── orchestrator.py # Master pipeline state machine
+│   ├── kinematics/     # 5-6 DOF analytical Inverse Kinematics & Waypoint Planner
+│   ├── hardware/       # PCA9685 I2C driver (with Mock fallback) & GPIO button
+│   ├── vision/         # 4-corner homography warp & legal-move delta detection
+│   └── engine/         # Stockfish UCI integration with fallback Minimax AI
 └── assets/
     └── icon.svg        # App vector icon
 ```
+
+---
+
+## 🤖 Robotic Chess Opponent (Raspberry Pi 4 + PCA9685 + MG946R)
+
+CheckMate now includes an end-to-end **Robotic Chess Opponent System** designed to play on a real, physical chessboard using computer vision and a multi-DOF robotic arm!
+
+```
+Webcam (Overhead) ──> Board Detection (Homography) ──> Move Detection ──> python-chess (Validate)
+                                                                                  │
+                                     Stockfish Engine <── Best Move Calculation <─┘
+                                           │
+                                           ▼
+                               Arm Controller (Waypoints)
+                                           │
+                                           ▼
+                                 Inverse Kinematics (IK)
+                                           │
+                                           ▼
+                               PCA9685 16-Channel 12-Bit PWM
+                                           │
+                                           ▼
+                         MG946R Servos (Pick, Place, Capture)
+```
+
+### 🛠️ Hardware Requirements
+1. **Raspberry Pi 4 (Brain)**: Runs Computer Vision, Stockfish, IK, and servo control — no microcontroller/ESP32 required!
+2. **5-6x MG946R Metal-Gear High-Torque Servos**: Powers Base Yaw, Shoulder Pitch, Elbow Pitch, Wrist Pitch, and Gripper Clamp.
+3. **PCA9685 16-Channel 12-Bit PWM Driver**: Connects to Raspberry Pi via I2C (`0x40`).
+4. **Zebronics USB Overhead Webcam**: Mounted 45cm–65cm above the board.
+5. **Physical Momentary Push Button**: Connected between GPIO 17 (Pin 11) and Ground (Pin 9).
+6. **External 5V–6V 5A–10A DC Power Supply**: Powers the PCA9685 servo rail directly (never power MG946R servos from Pi header).
+
+*See complete pin diagrams and electrical notes in [`docs/HARDWARE_WIRING.md`](file:///c:/Users/goura/OneDrive/Desktop/projects/check-mate/docs/HARDWARE_WIRING.md).*
+
+---
+
+### 🚀 Running the Robotic System
+
+#### On Raspberry Pi 4 (Physical Hardware):
+```bash
+# 1. Run automated setup (installs Stockfish, I2C tools, python libs)
+chmod +x setup_raspberry_pi.sh
+./setup_raspberry_pi.sh
+
+# 2. Start the Robotic Chess Brain
+source ~/robochess-venv/bin/activate
+python robot_backend/main.py --host 0.0.0.0 --port 5000
+```
+
+#### On PC / Laptop (Simulation & Development Mode):
+The system includes built-in mock drivers so you can develop, test, and calibrate without physical servos or I2C connected:
+```bash
+# Start backend server
+python robot_backend/main.py --host 127.0.0.1 --port 5000
+
+# In another terminal, start web interface
+npm start
+```
+Open `http://localhost:3000`, click the **"Robotic Arm"** tab, and interact with the live camera feed, servo sliders, and board scanning!
+
