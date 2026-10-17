@@ -294,17 +294,37 @@ body {
 
 .ai-status-pulse {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--accent-gold);
   animation: pulse-ring 1.2s infinite;
+}
+
+.ai-thinking-text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #fde68a;
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  padding: 1px 7px;
+  border-radius: 999px;
+  margin-left: 4px;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  animation: pulse-thinking 1.4s infinite ease-in-out;
 }
 
 @keyframes pulse-ring {
   0% { transform: scale(0.8); opacity: 0.5; }
   50% { transform: scale(1.3); opacity: 1; }
   100% { transform: scale(0.8); opacity: 0.5; }
+}
+
+@keyframes pulse-thinking {
+  0%, 100% { opacity: 0.75; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1.02); }
 }
 
 .captured-rack {

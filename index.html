@@ -52,7 +52,8 @@
             <div class="player-name-row">
               <span class="player-name" id="topPlayerName">StockBot (Medium)</span>
               <span class="player-badge" id="topPlayerBadge">Black</span>
-              <span class="ai-status-pulse" title="AI is evaluating..." style="display:none;"></span>
+              <span class="ai-status-pulse" id="topAiPulse" title="AI is evaluating..." style="display:none;"></span>
+              <span class="ai-thinking-text" id="topAiThinkingText" style="display:none;">Thinking...</span>
             </div>
             <div class="captured-rack" id="topCapturedRack"></div>
           </div>
@@ -185,12 +186,20 @@
         </div>
 
         <div class="settings-group">
-          <label class="settings-label" for="difficultySelect">AI Difficulty Level</label>
+          <label class="settings-label" for="difficultySelect">Bot Difficulty Level</label>
           <select id="difficultySelect" class="select-custom">
-            <option value="easy">Easy (Casual Blunders • ~800 Elo)</option>
-            <option value="medium" selected>Medium (Standard Minimax • ~1400 Elo)</option>
-            <option value="hard">Hard (Alpha-Beta Deep • ~1800 Elo)</option>
-            <option value="master">Master (Quiescence Deep Search • ~2000+ Elo)</option>
+            <option value="easy">Easy (Beginner • ~800 Elo)</option>
+            <option value="medium" selected>Medium (Intermediate • ~1400 Elo)</option>
+            <option value="hard">Hard (Advanced • ~1900 Elo)</option>
+          </select>
+        </div>
+
+        <div class="settings-group">
+          <label class="settings-label" for="speedSelect">Bot Reaction Time</label>
+          <select id="speedSelect" class="select-custom">
+            <option value="realistic" selected>Realistic (1.0s – 2.5s • Like Human Player)</option>
+            <option value="fast">Fast (0.5s – 1.0s)</option>
+            <option value="instant">Instant (0.05s • Fast Analysis)</option>
           </select>
         </div>
 

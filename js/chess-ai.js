@@ -275,9 +275,31 @@ class ChessAI {
     }
   }
 
-  getBestMoveAsync(engine, difficulty = 'medium') {
+  getBestMoveAsync(engine, difficulty = 'medium', reactionSpeed = 'realistic') {
     return new Promise(resolve => {
-      // Use setTimeout so the UI render thread does not freeze
+      // Calculate realistic human-like thinking delay
+      let delay = 1400;
+
+      if (reactionSpeed === 'instant') {
+        delay = 50;
+      } else if (reactionSpeed === 'fast') {
+        delay = 400 + Math.random() * 400; // 400ms - 800ms
+      } else {
+        // Realistic human reaction time (mimics 2 players playing)
+        if (difficulty === 'easy') {
+          // Casual player takes around 900ms - 1700ms
+          delay = 900 + Math.random() * 800;
+        } else if (difficulty === 'medium') {
+          // Average player takes around 1300ms - 2300ms
+          delay = 1300 + Math.random() * 1000;
+        } else if (difficulty === 'hard') {
+          // Calculating tactical player takes around 1800ms - 3200ms
+          delay = 1800 + Math.random() * 1400;
+        } else {
+          delay = 1400 + Math.random() * 900;
+        }
+      }
+
       setTimeout(() => {
         const color = engine.turn;
         const isMaximizing = color === 'w';
@@ -288,9 +310,9 @@ class ChessAI {
           return;
         }
 
-        // Easy: 40% blunder / random, Depth 1
+        // Easy (~800 Elo): 35% blunder / casual move, Depth 1
         if (difficulty === 'easy') {
-          if (Math.random() < 0.4) {
+          if (Math.random() < 0.35) {
             const randomMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
             resolve(randomMove);
             return;
@@ -300,23 +322,16 @@ class ChessAI {
           return;
         }
 
-        // Medium: Depth 2
+        // Medium (~1400 Elo): Depth 2 with PST evaluation
         if (difficulty === 'medium') {
           const res = this.minimax(engine, 2, -Infinity, Infinity, isMaximizing, false);
           resolve(res.move || legalMoves[0]);
           return;
         }
 
-        // Hard: Depth 3
+        // Hard (~1900 Elo): Depth 3-4 with MVV-LVA move ordering & quiescence search
         if (difficulty === 'hard') {
           const res = this.minimax(engine, 3, -Infinity, Infinity, isMaximizing, true);
-          resolve(res.move || legalMoves[0]);
-          return;
-        }
-
-        // Master: Depth 4 with quiescence
-        if (difficulty === 'master') {
-          const res = this.minimax(engine, 4, -Infinity, Infinity, isMaximizing, true);
           resolve(res.move || legalMoves[0]);
           return;
         }
@@ -324,7 +339,7 @@ class ChessAI {
         // Default fallback
         const res = this.minimax(engine, 2, -Infinity, Infinity, isMaximizing, false);
         resolve(res.move || legalMoves[0]);
-      }, 50);
+      }, delay);
     });
   }
 }

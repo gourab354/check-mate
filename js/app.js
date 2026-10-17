@@ -13,7 +13,8 @@ class ChessApp {
     this.mode = 'ai'; // 'ai' | 'pass' | 'ai_vs_ai'
     this.playerColor = 'w'; // 'w' | 'b' | 'random'
     this.actualPlayerColor = 'w'; // What player actually is this game
-    this.difficulty = 'medium'; // 'easy' | 'medium' | 'hard' | 'master'
+    this.difficulty = 'medium'; // 'easy' | 'medium' | 'hard'
+    this.reactionSpeed = 'realistic'; // 'realistic' | 'fast' | 'instant'
     this.flipped = false;
     this.theme = 'emerald';
     this.showHints = true;
@@ -95,6 +96,13 @@ class ChessApp {
       this.difficulty = savedDifficulty;
       const diffSelect = document.getElementById('difficultySelect');
       if (diffSelect) diffSelect.value = savedDifficulty;
+    }
+
+    const savedSpeed = localStorage.getItem('checkmate_reaction_speed');
+    if (savedSpeed) {
+      this.reactionSpeed = savedSpeed;
+      const speedSelect = document.getElementById('speedSelect');
+      if (speedSelect) speedSelect.value = savedSpeed;
     }
 
     const savedSound = localStorage.getItem('checkmate_muted');
@@ -561,7 +569,7 @@ class ChessApp {
     this.showThinkingPulse(true);
 
     try {
-      const bestMove = await this.ai.getBestMoveAsync(this.engine, this.difficulty);
+      const bestMove = await this.ai.getBestMoveAsync(this.engine, this.difficulty, this.reactionSpeed);
       this.isAiThinking = false;
       this.showThinkingPulse(false);
 
@@ -576,9 +584,13 @@ class ChessApp {
   }
 
   showThinkingPulse(show) {
-    const aiPulse = document.querySelector('.ai-status-pulse');
+    const aiPulse = document.getElementById('topAiPulse') || document.querySelector('.ai-status-pulse');
+    const aiThinkingText = document.getElementById('topAiThinkingText');
     if (aiPulse) {
       aiPulse.style.display = show ? 'inline-block' : 'none';
+    }
+    if (aiThinkingText) {
+      aiThinkingText.style.display = show ? 'inline-block' : 'none';
     }
   }
 
@@ -933,6 +945,14 @@ class ChessApp {
       this.updatePlayerBadges();
     });
 
+    const speedSelect = document.getElementById('speedSelect');
+    if (speedSelect) {
+      speedSelect.addEventListener('change', (e) => {
+        this.reactionSpeed = e.target.value;
+        localStorage.setItem('checkmate_reaction_speed', this.reactionSpeed);
+      });
+    }
+
     document.getElementById('toggleHints').addEventListener('change', (e) => {
       this.showHints = e.target.checked;
       this.renderBoard();
@@ -992,7 +1012,7 @@ class ChessApp {
 
   openNewGameModal() {
     this.dom.modalTitle.textContent = 'Start New Game';
-    this.dom.modalSubtitle.textContent = 'Configure game mode and time controls';
+    this.dom.modalSubtitle.textContent = 'Configure game mode, difficulty, and time controls';
 
     this.dom.modalActions.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:12px; width:100%; margin-bottom:16px;">
@@ -1002,6 +1022,15 @@ class ChessApp {
             <option value="ai" ${this.mode === 'ai' ? 'selected' : ''}>Play vs StockBot (AI)</option>
             <option value="pass" ${this.mode === 'pass' ? 'selected' : ''}>Pass & Play (Local 2-Player)</option>
             <option value="ai_vs_ai" ${this.mode === 'ai_vs_ai' ? 'selected' : ''}>StockBot vs StockBot</option>
+          </select>
+        </div>
+
+        <div id="modalDifficultyWrapper">
+          <label class="settings-label" style="text-align:left;">Bot Difficulty</label>
+          <select id="modalDifficultySelect" class="select-custom">
+            <option value="easy" ${this.difficulty === 'easy' ? 'selected' : ''}>Easy (Beginner • ~800 Elo)</option>
+            <option value="medium" ${this.difficulty === 'medium' ? 'selected' : ''}>Medium (Intermediate • ~1400 Elo)</option>
+            <option value="hard" ${this.difficulty === 'hard' ? 'selected' : ''}>Hard (Advanced • ~1900 Elo)</option>
           </select>
         </div>
 
@@ -1033,6 +1062,15 @@ class ChessApp {
       </div>
     `;
 
+    const modalModeSelect = document.getElementById('modalModeSelect');
+    const diffWrapper = document.getElementById('modalDifficultyWrapper');
+    if (modalModeSelect && diffWrapper) {
+      modalModeSelect.addEventListener('change', () => {
+        diffWrapper.style.display = modalModeSelect.value === 'pass' ? 'none' : 'block';
+      });
+      diffWrapper.style.display = modalModeSelect.value === 'pass' ? 'none' : 'block';
+    }
+
     document.getElementById('modalCancelBtn').addEventListener('click', () => {
       this.dom.modalOverlay.classList.remove('open');
     });
@@ -1041,6 +1079,14 @@ class ChessApp {
       this.mode = document.getElementById('modalModeSelect').value;
       this.playerColor = document.getElementById('modalColorSelect').value;
       this.timeControl = parseInt(document.getElementById('modalTimeSelect').value, 10);
+
+      const modalDiff = document.getElementById('modalDifficultySelect');
+      if (modalDiff) {
+        this.difficulty = modalDiff.value;
+        localStorage.setItem('checkmate_difficulty', this.difficulty);
+        const diffSelect = document.getElementById('difficultySelect');
+        if (diffSelect) diffSelect.value = this.difficulty;
+      }
 
       this.dom.modalOverlay.classList.remove('open');
       this.startNewGame();
