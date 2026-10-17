@@ -1,4 +1,4 @@
-# ♟️ CheckMate — Fully Functional Offline Chess
+#  CheckMate — Fully Functional Offline Chess
 
 **CheckMate** is a modern, feature-packed, and fully offline-capable chess game with an integrated AI engine (Minimax + Alpha-Beta Pruning + Quiescence search), realistic human-like bot reaction times, procedural Web Audio sound synthesis, digital chess clocks, real-time advantage evaluation bar, and PGN/FEN tools.
 
@@ -25,9 +25,9 @@ Then visit `http://localhost:3000`. You can also install it as a standalone desk
 
 ---
 
-## 🎯 Key Features
+##  Key Features
 
-### 1. 🤖 Smart AI Engine ("StockBot") with Human-like Reaction Time
+### 1.  Smart AI Engine ("StockBot") with Human-like Reaction Time
 - **Realistic Thinking Delay**:
   - Instead of instant, robotic moves, the bot pauses and evaluates its moves naturally like a real human player sitting across the board (800ms - 2800ms with animated *Thinking...* status badge).
   - Customizable reaction speeds: **Realistic** (Human-like 1.0s – 2.5s), **Fast** (0.5s – 1.0s), or **Instant** (0.05s).
@@ -37,7 +37,7 @@ Then visit `http://localhost:3000`. You can also install it as a standalone desk
   - **Hard (~1900 Elo)**: Deep tactical Alpha-Beta pruning with MVV-LVA move ordering and quiescence capture extension.
 - **Move Hint Engine**: Suggests optimal tactical moves with animated glowing highlights on the board.
 
-### 2. ♟️ Complete Chess Rules Engine
+### 2.  Complete Chess Rules Engine
 - **Legal Move Generation**: Strict adherence to official FIDE chess rules.
 - **Special Moves**:
   - **Castling** (Kingside & Queenside) with pass-through check validation.
@@ -50,7 +50,7 @@ Then visit `http://localhost:3000`. You can also install it as a standalone desk
   - Insufficient material draws (K vs K, K+B vs K, K+N vs K, K+B vs K+B same color).
 - **Standard Algebraic Notation (SAN)**: Real-time notation with captures, disambiguation, checks (`+`), and mate (`#`).
 
-### 3. ⏱️ Digital Chess Clocks
+### 3.  Digital Chess Clocks
 - Choose from popular time controls:
   - **1 min** (Bullet)
   - **3 min** (Blitz)
@@ -61,11 +61,11 @@ Then visit `http://localhost:3000`. You can also install it as a standalone desk
 - Low-time alarm pulse when under 30 seconds.
 - Automatic flag fall detection on timeout.
 
-### 4. 📊 Real-Time Evaluation Bar
+### 4.  Real-Time Evaluation Bar
 - Displays White vs Black advantage in real time.
 - Sigmoid-compressed dynamic height with numeric centipawn readout (e.g., `+1.4`, `-2.0`, `M+`).
 
-### 5. 🔊 Procedural Web Audio Sound Effects
+### 5.  Procedural Web Audio Sound Effects
 - Synthesizes organic sounds using the Web Audio API without needing external MP3 files:
   - Piece move clack
   - Piece capture knock
@@ -75,7 +75,7 @@ Then visit `http://localhost:3000`. You can also install it as a standalone desk
   - Illegal move buzz
 - Mute / Unmute toggle button with saved preference in `localStorage`.
 
-### 6. 🎨 Board Customization & Themes
+### 6.  Board Customization & Themes
 - 4 curated board themes:
   - **Emerald & Ivory** (Modern tournament standard)
   - **Walnut & Maple** (Classic wooden elegance)
@@ -83,7 +83,7 @@ Then visit `http://localhost:3000`. You can also install it as a standalone desk
   - **Cyberpunk** (Neon cyan synthwave)
 - Board flip toggle & optional auto-flip for 2-player pass-and-play.
 
-### 7. 📜 Move History & PGN / FEN Tools
+### 7.  Move History & PGN / FEN Tools
 - Interactive move history table: click on any past move to review board positions without disrupting the ongoing game.
 - Full Undo & Redo functionality.
 - Export & Copy PGN game records or download a `.pgn` file.
@@ -128,7 +128,7 @@ check-mate/
 
 ---
 
-## 🤖 Robotic Chess Opponent (Raspberry Pi 4 + PCA9685 + MG946R)
+##  Robotic Chess Opponent (Raspberry Pi 4 + PCA9685 + MG946R)
 
 CheckMate now includes an end-to-end **Robotic Chess Opponent System** designed to play on a real, physical chessboard using computer vision and a multi-DOF robotic arm!
 
@@ -150,7 +150,7 @@ Webcam (Overhead) ──> Board Detection (Homography) ──> Move Detection �
                          MG946R Servos (Pick, Place, Capture)
 ```
 
-### 🛠️ Hardware Requirements
+###  Hardware Requirements
 1. **Raspberry Pi 4 (Brain)**: Runs Computer Vision, Stockfish, IK, and servo control — no microcontroller/ESP32 required!
 2. **5-6x MG946R Metal-Gear High-Torque Servos**: Powers Base Yaw, Shoulder Pitch, Elbow Pitch, Wrist Pitch, and Gripper Clamp.
 3. **PCA9685 16-Channel 12-Bit PWM Driver**: Connects to Raspberry Pi via I2C (`0x40`).
@@ -162,7 +162,7 @@ Webcam (Overhead) ──> Board Detection (Homography) ──> Move Detection �
 
 ---
 
-### 🚀 Running the Robotic System
+###  Running the Robotic System
 
 #### On Raspberry Pi 4 (Physical Hardware):
 ```bash
